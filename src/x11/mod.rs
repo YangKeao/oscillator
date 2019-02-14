@@ -112,6 +112,17 @@ impl X11 {
                             trace!("Event CLIENT_MESSAGE triggered");
                         }
                         xcb::MAP_REQUEST => {
+                            let map_request_event: &xcb::MapRequestEvent =
+                                unsafe { xcb::cast_event(&event) };
+
+                            let window = map_request_event.window();
+                            xcb::map_window(&self.connection, window);
+                            xcb::configure_window(&self.connection, window, &[
+                                (xcb::CONFIG_WINDOW_WIDTH as u16, 300), // TODO: set width
+                                (xcb::CONFIG_WINDOW_HEIGHT as u16, 300), // TODO: set height
+                            ]);
+
+                            self.connection.flush();
                             trace!("Event MAP_REQUEST triggered");
                         }
                         xcb::CIRCULATE_REQUEST => {
@@ -174,7 +185,5 @@ impl X11 {
         xcb::poly_fill_rectangle(&self.connection, self.window_id, foreground, &[
             xcb::Rectangle::new(x as i16, y as i16, w as u16, h as u16)
         ]);
-
-        self.connection.flush();
     }
 }
