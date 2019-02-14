@@ -52,8 +52,17 @@ impl X11 {
         let title = "Oscillator";
         xcb::change_property(&x11.connection, xcb::PROP_MODE_REPLACE as u8, x11.window_id,
                              xcb::ATOM_WM_NAME, xcb::ATOM_STRING, 8, title.as_bytes());
+
+        let cursor_font = x11.connection.generate_id();
+        xcb::open_font(&x11.connection, cursor_font, "cursor");
+        let cursor = x11.connection.generate_id();
+        xcb::create_glyph_cursor(&x11.connection, cursor,
+                                 cursor_font, cursor_font,
+                                 68, 68 + 1, 0, 0, 0,
+                                 0, 0, 0);
         xcb::change_window_attributes(&x11.connection, x11.window_id, &[
-            (xcb::CW_EVENT_MASK, event_mask)
+            (xcb::CW_EVENT_MASK, event_mask),
+            (xcb::CW_CURSOR, cursor)
         ]);
         info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
 
