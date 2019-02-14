@@ -66,7 +66,6 @@ impl X11 {
         ]);
         info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
 
-        x11.fill_rect(0, 0, x11.width, x11.height, Color::default());
         x11.connection.flush();
 
         return x11;
