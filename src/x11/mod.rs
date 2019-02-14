@@ -115,6 +115,7 @@ impl X11 {
                                 unsafe { xcb::cast_event(&event) };
 
                             let window = map_request_event.window();
+                            info!("Window {} Mapped", window);
                             xcb::map_window(&self.connection, window);
                             xcb::configure_window(&self.connection, window, &[
                                 (xcb::CONFIG_WINDOW_WIDTH as u16, 300), // TODO: set width
