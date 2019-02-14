@@ -4,6 +4,8 @@ pub struct X11 {
     connection: Arc<xcb::Connection>,
     screen_num: i32,
     window_id: u32,
+    height: i32,
+    width: i32,
 }
 
 pub struct Color {}
@@ -18,24 +20,22 @@ impl X11 {
     pub fn new() -> Self {
         let (connection, screen_num) = xcb::Connection::connect(None).unwrap();
 
-        let mut x11 = X11 {
+        let setup = connection.get_setup();
+        let screen = setup.roots().nth(screen_num as usize).unwrap();
+        let root_id = screen.root();
+        let width = screen.width_in_pixels() as i32;
+        let height = screen.height_in_pixels() as i32;
+
+        let x11 = X11 {
             connection: Arc::new(connection),
             screen_num,
-            window_id: 0,
+            window_id: root_id,
+            width,
+            height
         };
 
-        let setup = x11.connection.get_setup();
-        let screen = setup.roots().nth(x11.screen_num as usize).unwrap();
-
-        x11.window_id = screen.root();
-        let mut width = screen.width_in_pixels() as i32;
-        let mut height = screen.height_in_pixels() as i32;
-
-        let event_mask = xcb::EVENT_MASK_EXPOSURE
-                    | xcb::EVENT_MASK_KEY_PRESS
-                    | xcb::EVENT_MASK_KEY_RELEASE
+        let event_mask = xcb::EVENT_MASK_KEY_PRESS
                     | xcb::EVENT_MASK_BUTTON_PRESS
-                    | xcb::EVENT_MASK_BUTTON_RELEASE
                     | xcb::EVENT_MASK_POINTER_MOTION
                     | xcb::EVENT_MASK_BUTTON_MOTION
                     | xcb::EVENT_MASK_BUTTON_1_MOTION
@@ -55,9 +55,9 @@ impl X11 {
         xcb::change_window_attributes(&x11.connection, x11.window_id, &[
             (xcb::CW_EVENT_MASK, event_mask)
         ]);
-        info!("Create window. Width: {}, Height: {}", width, height);
+        info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
 
-        x11.fill_rect(0, 0, width, height, Color::default());
+        x11.fill_rect(0, 0, x11.width, x11.height, Color::default());
         x11.connection.flush();
 
         return x11;
@@ -74,11 +74,6 @@ impl X11 {
                 Some(event) => {
                     let r = event.response_type() & !0x80;
                     match r {
-                        xcb::EXPOSE => {
-                            let expose_event: &xcb::ExposeEvent =
-                                unsafe { xcb::cast_event(&event) };
-                            trace!("Event EXPOSE triggered");
-                        }
                         xcb::KEY_PRESS => {
                             let key_press_event: &xcb::KeyPressEvent =
                                 unsafe { xcb::cast_event(&event) };
@@ -87,9 +82,6 @@ impl X11 {
                                 key_press_event.event()
                             );
                         }
-                        xcb::KEY_RELEASE => {
-                            trace!("Event KEY_RELEASE triggered");
-                        }
                         xcb::BUTTON_PRESS => {
                             let button_press_event: &xcb::ButtonPressEvent =
                                 unsafe { xcb::cast_event(&event) };
@@ -97,9 +89,6 @@ impl X11 {
                                 "Event BUTTON_PRESS triggered on WINDOW: {}",
                                 button_press_event.event()
                             );
-                        }
-                        xcb::BUTTON_RELEASE => {
-                            trace!("Event BUTTON_RELEASE triggered");
                         }
                         xcb::MOTION_NOTIFY => {
                             trace!("Event MOTION_NOTIFY triggered");
@@ -115,6 +104,36 @@ impl X11 {
                         }
                         xcb::MAP_REQUEST => {
                             trace!("Event MAP_REQUEST triggered");
+                        }
+                        xcb::CIRCULATE_REQUEST => {
+                            trace!("Event CIRCULATE_REQUEST triggered");
+                        }
+                        xcb::CONFIGURE_REQUEST => {
+                            trace!("Event CONFIGURE_REQUEST triggered");
+                        }
+                        xcb::CIRCULATE_NOTIFY => {
+                            trace!("Event CIRCULATE_NOTIFY triggered");
+                        }
+                        xcb::CONFIGURE_NOTIFY => {
+                            trace!("Event CONFIGURE_NOTIFY triggered");
+                        }
+                        xcb::CREATE_NOTIFY => {
+                            trace!("Event CREATE_NOTIFY triggered");
+                        }
+                        xcb::DESTROY_NOTIFY => {
+                            trace!("Event DESTROY_NOTIFY triggered");
+                        }
+                        xcb::GRAVITY_NOTIFY => {
+                            trace!("Event GRAVITY_NOTIFY triggered");
+                        }
+                        xcb::MAP_NOTIFY => {
+                            trace!("Event MAP_NOTIFY triggered");
+                        }
+                        xcb::REPARENT_NOTIFY => {
+                            trace!("Event REPARENT_NOTIFY triggered");
+                        }
+                        xcb::UNMAP_NOTIFY => {
+                            trace!("Event UNMAP_NOTIFY triggered");
                         }
                         0 => {
                             let error_message: &xcb::GenericError =
