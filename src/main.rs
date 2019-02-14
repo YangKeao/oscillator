@@ -37,6 +37,6 @@ fn main() {
 
     let settings = Settings::from_config(config);
 
-    let x11 = x11::X11::new();
+    let x11 = x11::X11::setup();
     x11.main_loop();
 }

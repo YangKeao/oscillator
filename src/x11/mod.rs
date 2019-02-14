@@ -17,7 +17,7 @@ impl Default for Color {
 }
 
 impl X11 {
-    pub fn new() -> Self {
+    pub fn setup() -> Self {
         let (connection, screen_num) = xcb::Connection::connect(None).unwrap();
 
         let setup = connection.get_setup();
