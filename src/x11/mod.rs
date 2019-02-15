@@ -31,22 +31,22 @@ impl X11 {
             screen_num,
             window_id: root_id,
             width,
-            height
+            height,
         };
 
         let event_mask = xcb::EVENT_MASK_KEY_PRESS
-                    | xcb::EVENT_MASK_BUTTON_PRESS
-                    | xcb::EVENT_MASK_POINTER_MOTION
-                    | xcb::EVENT_MASK_BUTTON_MOTION
-                    | xcb::EVENT_MASK_BUTTON_1_MOTION
-                    | xcb::EVENT_MASK_BUTTON_2_MOTION
-                    | xcb::EVENT_MASK_BUTTON_3_MOTION
-                    | xcb::EVENT_MASK_BUTTON_4_MOTION
-                    | xcb::EVENT_MASK_BUTTON_5_MOTION
-                    | xcb::EVENT_MASK_ENTER_WINDOW
-                    | xcb::EVENT_MASK_LEAVE_WINDOW
-                    | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
-                    | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+            | xcb::EVENT_MASK_BUTTON_PRESS
+            | xcb::EVENT_MASK_POINTER_MOTION
+            | xcb::EVENT_MASK_BUTTON_MOTION
+            | xcb::EVENT_MASK_BUTTON_1_MOTION
+            | xcb::EVENT_MASK_BUTTON_2_MOTION
+            | xcb::EVENT_MASK_BUTTON_3_MOTION
+            | xcb::EVENT_MASK_BUTTON_4_MOTION
+            | xcb::EVENT_MASK_BUTTON_5_MOTION
+            | xcb::EVENT_MASK_ENTER_WINDOW
+            | xcb::EVENT_MASK_LEAVE_WINDOW
+            | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
+            | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT;
         xcb::map_window(&x11.connection, x11.window_id);
 
         let title = "Oscillator";
@@ -66,7 +66,7 @@ impl X11 {
         ]);
         info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
 
-        x11.connection.flush();
+        x11.flush();
 
         return x11;
     }
@@ -115,14 +115,10 @@ impl X11 {
                                 unsafe { xcb::cast_event(&event) };
 
                             let window = map_request_event.window();
-                            info!("Window {} Mapped", window);
-                            xcb::map_window(&self.connection, window);
-                            xcb::configure_window(&self.connection, window, &[
-                                (xcb::CONFIG_WINDOW_WIDTH as u16, 300), // TODO: set width
-                                (xcb::CONFIG_WINDOW_HEIGHT as u16, 300), // TODO: set height
-                            ]);
+                            self.map_window(window);
+                            self.move_and_resize_window(window, 0, 0, 600, 400);
 
-                            self.connection.flush();
+                            self.flush();
                             trace!("Event MAP_REQUEST triggered");
                         }
                         xcb::CIRCULATE_REQUEST => {
@@ -185,5 +181,40 @@ impl X11 {
         xcb::poly_fill_rectangle(&self.connection, self.window_id, foreground, &[
             xcb::Rectangle::new(x as i16, y as i16, w as u16, h as u16)
         ]);
+    }
+
+    pub fn map_window(&self, window: u32) {
+        info!("Map window {}", window);
+        xcb::map_window(&self.connection, window);
+    }
+
+    pub fn resize_window(&self, window: u32, width: u32, height: u32) {
+        info!("Resize window {} into WIDTH: {} HEIGHT: {}", window, width, height);
+        xcb::configure_window(&self.connection, window, &[
+            (xcb::CONFIG_WINDOW_WIDTH as u16, width),
+            (xcb::CONFIG_WINDOW_HEIGHT as u16, height),
+        ]);
+    }
+
+    pub fn move_window(&self, window: u32, x: u32, y: u32) {
+        info!("Move window {} into X: {} Y: {}", window, x, y);
+        xcb::configure_window(&self.connection, window, &[
+            (xcb::CONFIG_WINDOW_X as u16, x),
+            (xcb::CONFIG_WINDOW_Y as u16, y),
+        ]);
+    }
+
+    pub fn move_and_resize_window(&self, window: u32, x: u32, y: u32, width: u32, height: u32) {
+        info!("Move and Resize window {} into X: {} Y: {} WIDTH: {} HEIGHT: {}", window, x, y, width, height);
+        xcb::configure_window(&self.connection, window, &[
+            (xcb::CONFIG_WINDOW_X as u16, x),
+            (xcb::CONFIG_WINDOW_Y as u16, y),
+            (xcb::CONFIG_WINDOW_WIDTH as u16, width),
+            (xcb::CONFIG_WINDOW_HEIGHT as u16, height),
+        ]);
+    }
+
+    pub fn flush(&self) {
+        self.connection.flush();
     }
 }
