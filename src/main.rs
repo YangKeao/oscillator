@@ -8,7 +8,7 @@ extern crate log;
 extern crate env_logger;
 
 mod setting;
-mod x11;
+mod oscillator;
 
 use clap::App;
 use config::File;
@@ -37,6 +37,6 @@ fn main() {
 
     let settings = Settings::from_config(config);
 
-    let x11 = x11::X11::setup();
-    x11.main_loop();
+    let oscillator = oscillator::Oscillator::setup();
+    oscillator.main_loop();
 }

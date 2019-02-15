@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-pub struct X11 {
+pub struct Oscillator {
     connection: Arc<xcb::Connection>,
     screen_num: i32,
     window_id: u32,
@@ -16,7 +16,7 @@ impl Default for Color {
     }
 }
 
-impl X11 {
+impl Oscillator {
     pub fn setup() -> Self {
         let (connection, screen_num) = xcb::Connection::connect(None).unwrap();
 
@@ -26,7 +26,7 @@ impl X11 {
         let width = screen.width_in_pixels() as i32;
         let height = screen.height_in_pixels() as i32;
 
-        let x11 = X11 {
+        let _self = Oscillator {
             connection: Arc::new(connection),
             screen_num,
             window_id: root_id,
@@ -47,28 +47,28 @@ impl X11 {
             | xcb::EVENT_MASK_LEAVE_WINDOW
             | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
             | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT;
-        xcb::map_window(&x11.connection, x11.window_id);
+        xcb::map_window(&_self.connection, _self.window_id);
 
         let title = "Oscillator";
-        xcb::change_property(&x11.connection, xcb::PROP_MODE_REPLACE as u8, x11.window_id,
+        xcb::change_property(&_self.connection, xcb::PROP_MODE_REPLACE as u8, _self.window_id,
                              xcb::ATOM_WM_NAME, xcb::ATOM_STRING, 8, title.as_bytes());
 
-        let cursor_font = x11.connection.generate_id();
-        xcb::open_font(&x11.connection, cursor_font, "cursor");
-        let cursor = x11.connection.generate_id();
-        xcb::create_glyph_cursor(&x11.connection, cursor,
+        let cursor_font = _self.connection.generate_id();
+        xcb::open_font(&_self.connection, cursor_font, "cursor");
+        let cursor = _self.connection.generate_id();
+        xcb::create_glyph_cursor(&_self.connection, cursor,
                                  cursor_font, cursor_font,
                                  68, 68 + 1, 0, 0, 0,
                                  0, 0, 0);
-        xcb::change_window_attributes(&x11.connection, x11.window_id, &[
+        xcb::change_window_attributes(&_self.connection, _self.window_id, &[
             (xcb::CW_EVENT_MASK, EVENT_MASK),
             (xcb::CW_CURSOR, cursor)
         ]);
-        info!("Setup root window. Width: {}, Height: {}", x11.width, x11.height);
+        info!("Setup root window. Width: {}, Height: {}", _self.width, _self.height);
 
-        x11.flush();
+        _self.flush();
 
-        return x11;
+        return _self;
     }
 
     pub fn main_loop(&self) {
