@@ -64,7 +64,7 @@ impl X11 {
             (xcb::CW_EVENT_MASK, EVENT_MASK),
             (xcb::CW_CURSOR, cursor)
         ]);
-        info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
+        info!("Setup root window. Width: {}, Height: {}", x11.width, x11.height);
 
         x11.flush();
 
