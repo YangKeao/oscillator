@@ -12,7 +12,12 @@ serde = "1.0.87"
 serde_derive = "1.0.87"
 env_logger = "0.6.0"
 log = "0.4.6"
+image = "0.21.0"
 
 [dependencies.xcb]
 version = "0.8"
 features = ["randr"]
+
+[dependencies.xcb-util]
+version = "0.2.0"
+features = ["image"]

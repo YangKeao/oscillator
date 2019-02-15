@@ -12,7 +12,8 @@ enum Key {
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
-    keys: HashMap<String, Key>
+    keys: HashMap<String, Key>,
+    background: String,
 }
 
 impl Settings {
@@ -27,5 +28,8 @@ impl Settings {
                 process::exit(0)
             }
         }
+    }
+    pub fn get_background(&self) -> &str {
+        &self.background
     }
 }

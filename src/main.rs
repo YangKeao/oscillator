@@ -37,6 +37,6 @@ fn main() {
 
     let settings = Settings::from_config(config);
 
-    let oscillator = oscillator::Oscillator::setup();
+    let oscillator = oscillator::Oscillator::setup(&settings);
     oscillator.main_loop();
 }
