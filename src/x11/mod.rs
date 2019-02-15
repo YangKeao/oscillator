@@ -34,7 +34,7 @@ impl X11 {
             height,
         };
 
-        let event_mask = xcb::EVENT_MASK_KEY_PRESS
+        const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
             | xcb::EVENT_MASK_BUTTON_PRESS
             | xcb::EVENT_MASK_POINTER_MOTION
             | xcb::EVENT_MASK_BUTTON_MOTION
@@ -61,7 +61,7 @@ impl X11 {
                                  68, 68 + 1, 0, 0, 0,
                                  0, 0, 0);
         xcb::change_window_attributes(&x11.connection, x11.window_id, &[
-            (xcb::CW_EVENT_MASK, event_mask),
+            (xcb::CW_EVENT_MASK, EVENT_MASK),
             (xcb::CW_CURSOR, cursor)
         ]);
         info!("Create window. Width: {}, Height: {}", x11.width, x11.height);
