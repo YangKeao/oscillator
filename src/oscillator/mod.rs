@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use crate::setting::Settings;
+use crate::keyboard::keysymdef::KEYSYM_MAP;
 use image::GenericImageView;
 
 pub struct Oscillator {
@@ -89,6 +90,11 @@ impl Oscillator {
                         xcb::KEY_PRESS => {
                             let key_press_event: &xcb::KeyPressEvent =
                                 unsafe { xcb::cast_event(&event) };
+
+                            let key_symbols = xcb_util::keysyms::KeySymbols::new(&self.connection);
+                            let keysym =  key_symbols.press_lookup_keysym(key_press_event, 0);
+
+                            println!("keysym: {} mod: {}", KEYSYM_MAP[&keysym], key_press_event.state());
                             trace!(
                                 "Event KEY_PRESS triggered on WINDOW: {}",
                                 key_press_event.event()

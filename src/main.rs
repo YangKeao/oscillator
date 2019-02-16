@@ -1,3 +1,5 @@
+#![feature(proc_macro_hygiene)]
+
 extern crate config;
 extern crate dirs;
 extern crate serde;
@@ -9,6 +11,7 @@ extern crate env_logger;
 
 mod setting;
 mod oscillator;
+mod keyboard;
 
 use clap::App;
 use config::File;

@@ -20,4 +20,8 @@ features = ["randr"]
 
 [dependencies.xcb-util]
 version = "0.2.0"
-features = ["image"]
+features = ["image", "keysyms"]
+
+[dependencies.phf]
+version = "0.7.24"
+features = ["macros"]
