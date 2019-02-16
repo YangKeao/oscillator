@@ -200,8 +200,6 @@ impl Oscillator {
                             trace!("Event REPARENT_NOTIFY triggered");
                         }
                         xcb::PROPERTY_NOTIFY => {
-                            let property_notify_event: &xcb::PropertyNotifyEvent =
-                                unsafe { xcb::cast_event(&event) };
                             trace!("Event PROPERTY_NOTIFY triggered");
                         }
                         0 => {
