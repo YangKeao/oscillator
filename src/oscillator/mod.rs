@@ -52,16 +52,12 @@ impl Oscillator {
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
             | xcb::EVENT_MASK_BUTTON_PRESS
             | xcb::EVENT_MASK_POINTER_MOTION
-            | xcb::EVENT_MASK_BUTTON_MOTION
-            | xcb::EVENT_MASK_BUTTON_1_MOTION
-            | xcb::EVENT_MASK_BUTTON_2_MOTION
-            | xcb::EVENT_MASK_BUTTON_3_MOTION
-            | xcb::EVENT_MASK_BUTTON_4_MOTION
-            | xcb::EVENT_MASK_BUTTON_5_MOTION
             | xcb::EVENT_MASK_ENTER_WINDOW
             | xcb::EVENT_MASK_LEAVE_WINDOW
+            | xcb::EVENT_MASK_STRUCTURE_NOTIFY
             | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
-            | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+            | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT
+            | PropertyChangeMask;
         xcb::map_window(&_self.connection, _self.window_id);
 
         let title = "Oscillator";
@@ -83,6 +79,7 @@ impl Oscillator {
 
 //        _self.set_background(settings.get_background());
 
+        _self.focus(_self.window_id);
         _self.flush();
 
         return _self;
@@ -201,6 +198,11 @@ impl Oscillator {
                         xcb::UNMAP_NOTIFY => {
                             trace!("Event UNMAP_NOTIFY triggered");
                         }
+                        xcb::PROPERTY_NOTIFY => {
+                            let property_notify_event: &xcb::PropertyNotifyEvent =
+                                unsafe { xcb::cast_event(&event) };
+                            trace!("Event PROPERTY_NOTIFY triggered");
+                        }
                         0 => {
                             let error_message: &xcb::GenericError =
                                 unsafe { xcb::cast_event(&event) };
@@ -212,6 +214,7 @@ impl Oscillator {
                             );
                         }
                         _ => {
+                            println!("{}", r);
                             warn!("Unhandled Event");
                         }
                     }
@@ -233,10 +236,14 @@ impl Oscillator {
         ]);
     }
 
+    pub fn focus(&self, window: u32) {
+        xcb::set_input_focus(&self.connection, 1, window, xcb::CURRENT_TIME);
+    }
+
     pub fn set_windows_input(&self, window: u32) {
-        const EVENT_MASK: u32 = xcb::EVENT_MASK_ENTER_WINDOW |
-            FocusChangeMask | PropertyChangeMask | xcb::EVENT_MASK_STRUCTURE_NOTIFY;
-            
+        const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS | xcb::EVENT_MASK_ENTER_WINDOW |
+            xcb::EVENT_MASK_STRUCTURE_NOTIFY;
+
         xcb::change_window_attributes(&self.connection, window, &[
             (xcb::CW_EVENT_MASK, EVENT_MASK)
         ]);
