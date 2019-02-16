@@ -35,10 +35,16 @@ impl WindowManager {
 
         match self.settings.get_tiling_method() {
             TilingMethod::Stack => {
-                if length > 0 {
+                if length == 1 {
                     self.windows[0].x = 0;
                     self.windows[0].y = 0;
-                    self.windows[0].width = self.width / 2; // TODO: if only one window.
+                    self.windows[0].width = self.width;
+                    self.windows[0].height = self.height;
+                    self.windows[0].mapped = true;
+                } else if length > 1 {
+                    self.windows[0].x = 0;
+                    self.windows[0].y = 0;
+                    self.windows[0].width = self.width / 2;
                     self.windows[0].height = self.height;
                     self.windows[0].mapped = true;
                 }

@@ -48,7 +48,7 @@ impl Oscillator {
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
             | xcb::EVENT_MASK_BUTTON_PRESS
             | xcb::EVENT_MASK_POINTER_MOTION
-            | xcb::EVENT_MASK_ENTER_WINDOW
+            // | xcb::EVENT_MASK_ENTER_WINDOW
             | xcb::EVENT_MASK_LEAVE_WINDOW
             | xcb::EVENT_MASK_STRUCTURE_NOTIFY
             | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
@@ -99,7 +99,7 @@ impl Oscillator {
                             let keysym = key_symbols.press_lookup_keysym(key_press_event, 0); //TODO: what is col?
                             let keymod = key_press_event.state();
 
-                            let mut key_string = format!("{}", KEYSYM_MAP[&keysym]);
+                            let mut key_string: String = format!("{}", KEYSYM_MAP[&keysym]);
                             for i in 0..8 {
                                 if keymod & 1 << (7-i) > 0 {
                                     key_string = format!("{}-{}", MOD_MAP[&(1 << (7-i))], key_string);
@@ -107,7 +107,7 @@ impl Oscillator {
                             }
                             info!("Trigger {}", key_string);
 
-                            match &self.settings.get_keys().get(&key_string) {
+                            match &self.settings.get_keys().get(&key_string.to_lowercase()) {
                                 Some(Key::Spawn{ command }) => {
                                     info!("Spawn: \"{}\"", command.join(" "));
                                     let mut proc = std::process::Command::new(&command[0]);
@@ -136,14 +136,17 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
                             trace!(
                                 "Event BUTTON_PRESS triggered on WINDOW: {}",
-                                button_press_event.event()
-                            );
+                                button_press_event.event());
                         }
                         xcb::MOTION_NOTIFY => {
                             trace!("Event MOTION_NOTIFY triggered");
                         }
                         xcb::ENTER_NOTIFY => {
-                            trace!("Event ENTER_NOTIFY triggered");
+                            let enter_notify_event: &xcb::EnterNotifyEvent =
+                                unsafe { xcb::cast_event(&event) };
+
+                            trace!("Event ENTER_NOTIFY triggered on WINDOW: {}",
+                                enter_notify_event.event());
                         }
                         xcb::LEAVE_NOTIFY => {
                             trace!("Event LEAVE_NOTIFY triggered");
