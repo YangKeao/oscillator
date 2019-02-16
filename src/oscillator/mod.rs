@@ -122,7 +122,6 @@ impl Oscillator {
                                             info!("Spawn \"{}\" successful", command.join(" "))
                                         }
                                     }
-                                    println!("RUNRUNRUN");
                                 }
                                 None => {
                                 }
@@ -160,8 +159,10 @@ impl Oscillator {
                             self.window_manager.borrow_mut().manage(window);
                             self.window_manager.borrow().sync(self);
 
-                            self.flush();
                             trace!("Event MAP_REQUEST triggered");
+                        }
+                        xcb::UNMAP_NOTIFY => {
+                            trace!("Event UNMAP_NOTIFY triggered");
                         }
                         xcb::CIRCULATE_REQUEST => {
                             trace!("Event CIRCULATE_REQUEST triggered");
@@ -179,6 +180,12 @@ impl Oscillator {
                             trace!("Event CREATE_NOTIFY triggered");
                         }
                         xcb::DESTROY_NOTIFY => {
+                            let destroy_notify_event: &xcb::DestroyNotifyEvent =
+                                unsafe { xcb::cast_event(&event) };
+
+                            let window = destroy_notify_event.window();
+                            self.window_manager.borrow_mut().unmanage(window);
+                            self.window_manager.borrow().sync(self);
                             trace!("Event DESTROY_NOTIFY triggered");
                         }
                         xcb::GRAVITY_NOTIFY => {
@@ -209,7 +216,6 @@ impl Oscillator {
                             );
                         }
                         _ => {
-                            println!("{}", r);
                             warn!("Unhandled Event");
                         }
                     }
