@@ -6,10 +6,6 @@ use crate::keyboard::keymod::MOD_MAP;
 use crate::window_manager::WindowManager;
 use image::GenericImageView;
 
-// TODO: give PR to rust-xcb
-const FocusChangeMask: u32 = 1<<21;
-const PropertyChangeMask: u32 = 1<<22;
-
 pub struct Oscillator {
     connection: Arc<xcb::Connection>,
     screen_num: i32,
@@ -56,8 +52,7 @@ impl Oscillator {
             | xcb::EVENT_MASK_LEAVE_WINDOW
             | xcb::EVENT_MASK_STRUCTURE_NOTIFY
             | xcb::EVENT_MASK_SUBSTRUCTURE_NOTIFY
-            | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT
-            | PropertyChangeMask;
+            | xcb::EVENT_MASK_SUBSTRUCTURE_REDIRECT;
         xcb::map_window(&_self.connection, _self.window_id);
 
         let title = "Oscillator";
