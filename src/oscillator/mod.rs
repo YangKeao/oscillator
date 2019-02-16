@@ -68,7 +68,7 @@ impl Oscillator {
         ]);
         info!("Setup root window. Width: {}, Height: {}", _self.width, _self.height);
 
-        _self.set_background(settings.get_background());
+//        _self.set_background(settings.get_background());
 
         _self.flush();
 
@@ -230,22 +230,12 @@ impl Oscillator {
         let mut img = image::open(background_src).unwrap();
         let img_width = img.width();
         let img_height = img.height();
+        let mut img_buffer = img.to_rgb();
         info!("Background WIDTH: {} HEIGHT: {}", img_width, img_height);
 
-        let pixmap = unsafe {
-            xcb_util::ffi::image::xcb_create_pixmap_from_bitmap_data(
-                self.connection.get_raw_conn(),
-                self.window_id,
-                img.raw_pixels().as_mut_ptr(),
-                img_width,
-                img_height,
-                24,
-                0,
-                0,
-                std::ptr::null(),
-            )
-        };
-        std::mem::forget(img);
+        let pixmap = self.connection.generate_id();
+        xcb::create_pixmap(&self.connection, 24,pixmap, self.window_id, img_width as u16, img_height as u16);
+        // TODO: Set background
 
         let prop_root = xcb::intern_atom(&self.connection, false, "_XROOTPMAP_ID").get_reply().unwrap().atom();
         let prop_esetroot = xcb::intern_atom(&self.connection, false, "ESETROOT_PMAP_ID").get_reply().unwrap().atom();
@@ -254,9 +244,9 @@ impl Oscillator {
         xcb::change_property(&self.connection, xcb::PROP_MODE_REPLACE as u8, self.window_id,
                              prop_esetroot, xcb::ATOM_PIXMAP, 32, &[pixmap]);
 
-//        xcb::change_window_attributes(&self.connection, self.window_id, &[
-//            (xcb::CW_BACK_PIXMAP, pixmap),
-//        ]);
+        xcb::change_window_attributes(&self.connection, self.window_id, &[
+            (xcb::CW_BACK_PIXMAP, pixmap),
+        ]);
     }
 
     pub fn flush(&self) {
