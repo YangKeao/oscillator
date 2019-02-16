@@ -14,21 +14,34 @@ pub struct Window {
 
 pub struct WindowManager {
     windows: Vec<Window>,
-    settings: Arc<Settings>
+    settings: Arc<Settings>,
+    width: u32,
+    height: u32,
 }
 
 impl WindowManager {
     pub fn new(settings: Arc<Settings>, width: u32, height: u32) -> WindowManager {
         WindowManager {
             windows: Vec::new(),
-            settings
+            settings,
+            width,
+            height,
         }
     }
 
     fn recalc(&mut self) {
-        for index in 0..self.windows.len() {
-            // TODO: check tags
+        let length = self.windows.len() as u32;
 
+        self.windows[0].x = 0;
+        self.windows[0].y = 0;
+        self.windows[0].width = self.width / 2; // TODO: if only one window.
+        self.windows[0].height = self.height;
+
+        for index in 1..(length as usize) {
+            self.windows[index].x = self.width / 2;
+            self.windows[index].y = self.height / (length - 1) * ((index - 1) as u32);
+            self.windows[index].width = self.width / 2;
+            self.windows[index].height = self.height / (length - 1);
         }
     }
 
@@ -39,6 +52,7 @@ impl WindowManager {
         for window in &self.windows {
             root.move_and_resize_window(window.window_id, window.x, window.y, window.width, window.height);
             root.map_window(window.window_id); // TODO: check tags
+            root.set_windows_input(window.window_id);
         }
 
         root.flush();

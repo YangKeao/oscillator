@@ -6,6 +6,10 @@ use crate::keyboard::keymod::MOD_MAP;
 use crate::window_manager::WindowManager;
 use image::GenericImageView;
 
+// TODO: give PR to rust-xcb
+const FocusChangeMask: u32 = 1<<21;
+const PropertyChangeMask: u32 = 1<<22;
+
 pub struct Oscillator {
     connection: Arc<xcb::Connection>,
     screen_num: i32,
@@ -226,6 +230,15 @@ impl Oscillator {
         ]);
         xcb::poly_fill_rectangle(&self.connection, self.window_id, foreground, &[
             xcb::Rectangle::new(x as i16, y as i16, w as u16, h as u16)
+        ]);
+    }
+
+    pub fn set_windows_input(&self, window: u32) {
+        const EVENT_MASK: u32 = xcb::EVENT_MASK_ENTER_WINDOW |
+            FocusChangeMask | PropertyChangeMask | xcb::EVENT_MASK_STRUCTURE_NOTIFY;
+            
+        xcb::change_window_attributes(&self.connection, window, &[
+            (xcb::CW_EVENT_MASK, EVENT_MASK)
         ]);
     }
 
