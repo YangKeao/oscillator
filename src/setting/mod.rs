@@ -3,11 +3,10 @@ use std::process;
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
-enum Key {
+pub enum Key {
     Spawn {
-        command: String
+        command: Vec<String>
     },
-
 }
 
 #[derive(Serialize, Deserialize)]
@@ -19,8 +18,12 @@ pub struct Settings {
 impl Settings {
     pub fn from_config(config: config::Config) -> Settings {
         match config.try_into() {
-            Ok(setting) => {
-                setting
+            Ok(settings) => {
+                let settings: Settings = settings; // TODO: Better way to give type annotation
+                for (key, _) in settings.get_keys() {
+                    info!("Map KEY: {}", key);
+                }
+                settings
             }
             Err(e) => {
                 // TODO: Handle Error
@@ -31,5 +34,8 @@ impl Settings {
     }
     pub fn get_background(&self) -> &str {
         &self.background
+    }
+    pub fn get_keys(&self) -> &HashMap<String, Key> {
+        &self.keys
     }
 }

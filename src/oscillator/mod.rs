@@ -1,6 +1,8 @@
 use std::sync::Arc;
 use crate::setting::Settings;
+use crate::setting::Key;
 use crate::keyboard::keysymdef::KEYSYM_MAP;
+use crate::keyboard::keymod::MOD_MAP;
 use image::GenericImageView;
 
 pub struct Oscillator {
@@ -9,6 +11,7 @@ pub struct Oscillator {
     window_id: u32,
     height: i32,
     width: i32,
+    settings: Settings,
 }
 
 pub struct Color {}
@@ -20,7 +23,7 @@ impl Default for Color {
 }
 
 impl Oscillator {
-    pub fn setup(settings: &Settings) -> Self {
+    pub fn setup(settings: Settings) -> Self {
         let (connection, screen_num) = xcb::Connection::connect(None).unwrap();
 
         let setup = connection.get_setup();
@@ -35,6 +38,7 @@ impl Oscillator {
             window_id: root_id,
             width,
             height,
+            settings
         };
 
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
@@ -92,9 +96,37 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             let key_symbols = xcb_util::keysyms::KeySymbols::new(&self.connection);
-                            let keysym =  key_symbols.press_lookup_keysym(key_press_event, 0);
+                            let keysym = key_symbols.press_lookup_keysym(key_press_event, 0); //TODO: what is col?
+                            let keymod = key_press_event.state();
 
-                            println!("keysym: {} mod: {}", KEYSYM_MAP[&keysym], key_press_event.state());
+                            let mut key_string = format!("{}", KEYSYM_MAP[&keysym]);
+                            for i in 0..8 {
+                                if keymod & 1 << (7-i) > 0 {
+                                    key_string = format!("{}-{}", MOD_MAP[&(1 << (7-i))], key_string);
+                                }
+                            }
+                            info!("Trigger {}", key_string);
+
+                            match &self.settings.get_keys().get(&key_string) {
+                                Some(Key::Spawn{ command }) => {
+                                    info!("Spawn: \"{}\"", command.join(" "));
+                                    let mut proc = std::process::Command::new(&command[0]);
+                                    for arg in 1..command.len() {
+                                        proc.arg(&command[arg]);
+                                    }
+                                    match proc.spawn() {
+                                        Err(_) => {
+                                            info!("Spawn Failed"); //TODO: More detailed spawn failed information
+                                        }
+                                        _ => {
+                                            info!("Spawn \"{}\" successful", command.join(" "))
+                                        }
+                                    }
+                                    println!("RUNRUNRUN");
+                                }
+                                None => {
+                                }
+                            }
                             trace!(
                                 "Event KEY_PRESS triggered on WINDOW: {}",
                                 key_press_event.event()
@@ -240,7 +272,7 @@ impl Oscillator {
         info!("Background WIDTH: {} HEIGHT: {}", img_width, img_height);
 
         let pixmap = self.connection.generate_id();
-        xcb::create_pixmap(&self.connection, 24,pixmap, self.window_id, img_width as u16, img_height as u16);
+        xcb::create_pixmap(&self.connection, 24, pixmap, self.window_id, img_width as u16, img_height as u16);
         // TODO: Set background
 
         let prop_root = xcb::intern_atom(&self.connection, false, "_XROOTPMAP_ID").get_reply().unwrap().atom();
