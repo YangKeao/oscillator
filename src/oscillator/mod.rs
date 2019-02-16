@@ -281,6 +281,8 @@ impl Oscillator {
     }
 
     pub fn set_background(&self, background_src: &str) {
+        unimplemented!();
+        /*
         let screen = self.connection.get_setup().roots().nth(self.screen_num as usize).unwrap();
         let foreground = self.connection.generate_id();
         xcb::create_gc(&self.connection, foreground, screen.root(), &[
@@ -309,6 +311,7 @@ impl Oscillator {
         xcb::change_window_attributes(&self.connection, self.window_id, &[
             (xcb::CW_BACK_PIXMAP, pixmap),
         ]);
+        */
     }
 
     pub fn flush(&self) {

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::collections::HashSet;
 use crate::oscillator::Oscillator;
-use crate::setting::Settings;
+use crate::setting::*;
 
 pub struct Window {
     window_id: u32,
@@ -32,16 +32,20 @@ impl WindowManager {
     fn recalc(&mut self) {
         let length = self.windows.len() as u32;
 
-        self.windows[0].x = 0;
-        self.windows[0].y = 0;
-        self.windows[0].width = self.width / 2; // TODO: if only one window.
-        self.windows[0].height = self.height;
+        match self.settings.get_tiling_method() {
+            TilingMethod::Stack => {
+                self.windows[0].x = 0;
+                self.windows[0].y = 0;
+                self.windows[0].width = self.width / 2; // TODO: if only one window.
+                self.windows[0].height = self.height;
 
-        for index in 1..(length as usize) {
-            self.windows[index].x = self.width / 2;
-            self.windows[index].y = self.height / (length - 1) * ((index - 1) as u32);
-            self.windows[index].width = self.width / 2;
-            self.windows[index].height = self.height / (length - 1);
+                for index in 1..(length as usize) {
+                    self.windows[index].x = self.width / 2;
+                    self.windows[index].y = self.height / (length - 1) * ((index - 1) as u32);
+                    self.windows[index].width = self.width / 2;
+                    self.windows[index].height = self.height / (length - 1);
+                }
+            }
         }
     }
 

@@ -9,10 +9,17 @@ pub enum Key {
     },
 }
 
+#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize)]
+pub enum TilingMethod {
+    Stack
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
     keys: HashMap<String, Key>,
     background: String,
+    tiling_method: TilingMethod
 }
 
 impl Settings {
@@ -37,5 +44,8 @@ impl Settings {
     }
     pub fn get_keys(&self) -> &HashMap<String, Key> {
         &self.keys
+    }
+    pub fn get_tiling_method(&self) -> TilingMethod {
+        self.tiling_method
     }
 }
