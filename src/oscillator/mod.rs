@@ -199,9 +199,6 @@ impl Oscillator {
                         xcb::REPARENT_NOTIFY => {
                             trace!("Event REPARENT_NOTIFY triggered");
                         }
-                        xcb::UNMAP_NOTIFY => {
-                            trace!("Event UNMAP_NOTIFY triggered");
-                        }
                         xcb::PROPERTY_NOTIFY => {
                             let property_notify_event: &xcb::PropertyNotifyEvent =
                                 unsafe { xcb::cast_event(&event) };
