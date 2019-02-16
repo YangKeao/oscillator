@@ -144,6 +144,9 @@ impl Oscillator {
                             let enter_notify_event: &xcb::EnterNotifyEvent =
                                 unsafe { xcb::cast_event(&event) };
 
+                            self.focus(enter_notify_event.event());
+                            self.flush();
+
                             trace!("Event ENTER_NOTIFY triggered on WINDOW: {}",
                                 enter_notify_event.event());
                         }
@@ -235,6 +238,7 @@ impl Oscillator {
     }
 
     pub fn focus(&self, window: u32) {
+        info!("Focus on WINDOW {}", window);
         xcb::set_input_focus(&self.connection, 1, window, xcb::CURRENT_TIME);
     }
 
