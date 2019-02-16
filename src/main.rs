@@ -12,6 +12,7 @@ extern crate env_logger;
 mod setting;
 mod oscillator;
 mod keyboard;
+mod window_manager;
 
 use clap::App;
 use config::File;

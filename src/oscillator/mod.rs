@@ -3,6 +3,7 @@ use crate::setting::Settings;
 use crate::setting::Key;
 use crate::keyboard::keysymdef::KEYSYM_MAP;
 use crate::keyboard::keymod::MOD_MAP;
+use crate::window_manager::WindowManager;
 use image::GenericImageView;
 
 pub struct Oscillator {
@@ -11,7 +12,8 @@ pub struct Oscillator {
     window_id: u32,
     height: i32,
     width: i32,
-    settings: Settings,
+    settings: Arc<Settings>,
+    window_manager: std::cell::RefCell<WindowManager>,
 }
 
 pub struct Color {}
@@ -32,13 +34,15 @@ impl Oscillator {
         let width = screen.width_in_pixels() as i32;
         let height = screen.height_in_pixels() as i32;
 
+        let settings = Arc::new(settings);
         let _self = Oscillator {
             connection: Arc::new(connection),
             screen_num,
             window_id: root_id,
             width,
             height,
-            settings
+            settings: settings.clone(),
+            window_manager: std::cell::RefCell::new(WindowManager::new(settings.clone(), width as u32, height as u32))
         };
 
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
@@ -157,8 +161,8 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             let window = map_request_event.window();
-                            self.map_window(window);
-                            self.move_and_resize_window(window, 0, 0, 600, 400);
+                            self.window_manager.borrow_mut().manage(window);
+                            self.window_manager.borrow().sync(self);
 
                             self.flush();
                             trace!("Event MAP_REQUEST triggered");
@@ -223,6 +227,11 @@ impl Oscillator {
         xcb::poly_fill_rectangle(&self.connection, self.window_id, foreground, &[
             xcb::Rectangle::new(x as i16, y as i16, w as u16, h as u16)
         ]);
+    }
+
+    pub fn unmap_window(&self, window: u32) {
+        info!("Unmap window {}", window);
+        xcb::unmap_window(&self.connection, window);
     }
 
     pub fn map_window(&self, window: u32) {
