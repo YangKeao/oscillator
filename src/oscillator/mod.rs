@@ -134,8 +134,7 @@ impl Oscillator {
                         xcb::BUTTON_PRESS => {
                             let button_press_event: &xcb::ButtonPressEvent =
                                 unsafe { xcb::cast_event(&event) };
-                            trace!(
-                                "Event BUTTON_PRESS triggered on WINDOW: {}",
+                            trace!("Event BUTTON_PRESS triggered on WINDOW: {}",
                                 button_press_event.event());
                         }
                         xcb::MOTION_NOTIFY => {
