@@ -7,6 +7,7 @@ pub enum Key {
     Spawn {
         command: Vec<String>
     },
+    Quit,
 }
 
 #[derive(Clone, Copy)]

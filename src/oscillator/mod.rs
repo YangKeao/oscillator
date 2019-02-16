@@ -123,6 +123,12 @@ impl Oscillator {
                                         }
                                     }
                                 }
+                                Some(Key::Quit) => {
+                                    info!("Quit focus window");
+
+                                    let window = xcb::get_input_focus(&self.connection).get_reply().unwrap().focus();
+                                    xcb::kill_client(&self.connection, window);
+                                }
                                 None => {
                                 }
                             }
