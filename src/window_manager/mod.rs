@@ -75,13 +75,15 @@ impl WindowManager {
 
     pub fn manage(&mut self, window_id: u32) {
         info!("Manage window {}", window_id);
+        let mut tags = HashSet::new();
+        tags.insert(0);
         self.windows.push(Window {
             window_id,
             width: 0,
             height: 0,
             x: 0,
             y: 0,
-            tags: HashSet::new(),
+            tags,
             mapped: false
         });
         self.recalc();
