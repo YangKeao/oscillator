@@ -17,7 +17,7 @@ impl Bar {
             settings,
             width,
             height: bar_height,
-            font: 0
+            font: 0,
         }
     }
 
@@ -42,9 +42,18 @@ impl Bar {
             println!("{:?}", text_extends);
 
             let x = i * cell_width + (cell_width - text_extends.overall_width as u32) / 2;
-            let y = self.height / 2 + ((text_extends.font_ascent + text_extends.font_descent) / 2 - text_extends.font_descent) as u32;
+            let y = self.height / 2
+                + ((text_extends.font_ascent + text_extends.font_descent) / 2
+                    - text_extends.font_descent) as u32;
 
-            root.draw_text(x as i32, y as i32, Color::from(&self.settings.get_bar().font_color), Color::from(&self.settings.get_bar().background_color), self.font, &s);
+            root.draw_text(
+                x as i32,
+                y as i32,
+                Color::from(&self.settings.get_bar().font_color),
+                Color::from(&self.settings.get_bar().background_color),
+                self.font,
+                &s,
+            );
         }
     }
 }

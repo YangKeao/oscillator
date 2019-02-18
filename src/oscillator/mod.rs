@@ -273,7 +273,15 @@ impl Oscillator {
             .unwrap();
     }
 
-    pub fn draw_text(&self, x: i32, y: i32, foreground: Color, background: Color, font: u32, text: &str) {
+    pub fn draw_text(
+        &self,
+        x: i32,
+        y: i32,
+        foreground: Color,
+        background: Color,
+        font: u32,
+        text: &str,
+    ) {
         let screen = self.get_screen();
         let gc = self.connection.generate_id();
         xcb::create_gc(
@@ -287,7 +295,14 @@ impl Oscillator {
             ],
         );
 
-        xcb::image_text_8(&self.connection, self.window_id, gc, x as i16, y as i16, text);
+        xcb::image_text_8(
+            &self.connection,
+            self.window_id,
+            gc,
+            x as i16,
+            y as i16,
+            text,
+        );
     }
 
     pub fn fill_rect(&self, x: i32, y: i32, w: i32, h: i32, color: Color) {
@@ -452,12 +467,16 @@ impl Oscillator {
         let len = s.len();
         let ptr = s.as_ptr();
         let ptr = ptr as *const xcb::Char2b;
-        let text_extends = xcb::query_text_extents(&self.connection, font, unsafe {std::slice::from_raw_parts(ptr, len)}).get_reply().unwrap();
+        let text_extends = xcb::query_text_extents(&self.connection, font, unsafe {
+            std::slice::from_raw_parts(ptr, len)
+        })
+        .get_reply()
+        .unwrap();
         return TextExtends {
             overall_width: text_extends.overall_width(),
             font_ascent: text_extends.font_ascent(),
             font_descent: text_extends.font_descent(),
-        }
+        };
     }
 
     pub fn flush(&self) {
