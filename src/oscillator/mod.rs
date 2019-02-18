@@ -8,16 +8,19 @@ use crate::utils::color::Color;
 use crate::utils::font::TextExtends;
 use image::GenericImageView;
 use std::sync::Arc;
+use std::collections::HashSet;
+use std::cell::RefCell;
 
 pub struct Oscillator {
     pub connection: Arc<xcb::Connection>,
+    pub current_tag: Arc<RefCell<HashSet<u32>>>,
     screen_num: i32,
     window_id: u32,
     height: i32,
     width: i32,
     settings: Arc<Settings>,
-    layout_manager: std::cell::RefCell<LayoutManager>,
-    bar: std::cell::RefCell<Bar>,
+    layout_manager: RefCell<LayoutManager>,
+    bar: RefCell<Bar>,
 }
 
 impl Oscillator {
@@ -32,6 +35,8 @@ impl Oscillator {
 
         let settings = Arc::new(settings);
         let connection = Arc::new(connection);
+        let current_tag = Arc::new(RefCell::new(HashSet::new()));
+        current_tag.borrow_mut().insert(0);
         let _self = Oscillator {
             connection: connection.clone(),
             screen_num,
@@ -39,12 +44,14 @@ impl Oscillator {
             width,
             height,
             settings: settings.clone(),
+            current_tag: current_tag.clone(),
             layout_manager: std::cell::RefCell::new(LayoutManager::new(
                 settings.clone(),
                 width as u32,
                 height as u32,
+                current_tag.clone(),
             )),
-            bar: std::cell::RefCell::new(Bar::new(settings.clone(), width as u32)),
+            bar: std::cell::RefCell::new(Bar::new(settings.clone(), width as u32, current_tag.clone())),
         };
         _self.bar.borrow_mut().prepare(&_self);
 
@@ -158,6 +165,35 @@ impl Oscillator {
                                     xcb::kill_client(&self.connection, window);
                                     self.flush();
                                 }
+                                Some(Key::SelTag {tag}) => {
+                                    info!("Select Tag: \"{}\"", tag);
+
+                                    self.current_tag.borrow_mut().clear();
+                                    self.current_tag.borrow_mut().insert(*tag);
+
+                                    self.bar.borrow().draw(&self);
+                                    self.layout_manager.borrow_mut().recalc();
+                                    self.layout_manager.borrow().sync(&self);
+
+                                    self.flush();
+                                }
+                                Some(Key::TagTarget {tag}) => {
+                                    unimplemented!();
+                                }
+                                Some(Key::SelAllTag) => {
+                                    info!("Select All Tags");
+
+                                    self.current_tag.borrow_mut().clear();
+                                    for i in 0..10 {
+                                        self.current_tag.borrow_mut().insert(i);
+                                    }
+
+                                    self.bar.borrow().draw(&self);
+                                    self.layout_manager.borrow_mut().recalc();
+                                    self.layout_manager.borrow().sync(&self);
+
+                                    self.flush();
+                                }
                                 None => {}
                             }
                             trace!(
@@ -181,6 +217,7 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             self.focus(enter_notify_event.event());
+                            self.layout_manager.borrow_mut().recalc();
                             self.layout_manager.borrow().sync(self);
                             self.flush();
 
@@ -202,6 +239,7 @@ impl Oscillator {
                             let window = map_request_event.window();
                             self.layout_manager.borrow_mut().manage(window);
                             self.listen_window_event(window);
+                            self.layout_manager.borrow_mut().recalc();
                             self.layout_manager.borrow().sync(self);
 
                             trace!("Event MAP_REQUEST triggered");
@@ -230,6 +268,7 @@ impl Oscillator {
 
                             let window = destroy_notify_event.window();
                             self.layout_manager.borrow_mut().unmanage(window);
+                            self.layout_manager.borrow_mut().recalc();
                             self.layout_manager.borrow().sync(self);
                             trace!("Event DESTROY_NOTIFY triggered");
                         }
@@ -335,6 +374,7 @@ impl Oscillator {
         info!("Focus on WINDOW {}", window);
 
         self.layout_manager.borrow_mut().focus(window);
+        self.layout_manager.borrow_mut().recalc();
         xcb::set_input_focus(&self.connection, 1, window, xcb::CURRENT_TIME);
     }
 

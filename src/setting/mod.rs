@@ -5,6 +5,9 @@ use std::process;
 #[serde(tag = "type")]
 pub enum Key {
     Spawn { command: Vec<String> },
+    SelTag { tag: u32 },
+    SelAllTag,
+    TagTarget { tag: u32 },
     Quit,
 }
 
@@ -27,6 +30,8 @@ pub struct BarSettings {
     pub font_color: String,
     pub background_color: String,
     pub tag_cell_width: u32,
+    pub active_background_color: String,
+    pub active_font_color: String,
 }
 
 #[derive(Serialize, Deserialize)]

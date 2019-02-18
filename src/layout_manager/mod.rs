@@ -3,6 +3,7 @@ use crate::setting::*;
 use crate::utils::color::Color;
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::cell::RefCell;
 
 pub struct Window {
     // INPUT:
@@ -25,21 +26,21 @@ pub struct LayoutManager {
     settings: Arc<Settings>,
     width: u32,
     height: u32,
-    current_tag: HashSet<u32>,
+    current_tag: Arc<RefCell<HashSet<u32>>>,
 }
 
 impl LayoutManager {
-    pub fn new(settings: Arc<Settings>, width: u32, height: u32) -> LayoutManager {
+    pub fn new(settings: Arc<Settings>, width: u32, height: u32, current_tag: Arc<RefCell<HashSet<u32>>>) -> LayoutManager {
         LayoutManager {
             windows: Vec::new(),
             settings,
             width,
             height,
-            current_tag: HashSet::new(),
+            current_tag,
         }
     }
 
-    fn recalc(&mut self) {
+    pub fn recalc(&mut self) {
         let length = self.windows.len() as u32;
 
         match self.settings.get_layout_manager_settings() {
@@ -54,14 +55,14 @@ impl LayoutManager {
                     self.windows[0].width = self.width - 2 * *border;
                     self.windows[0].height =
                         self.height - self.settings.get_bar().height - 2 * *border;
-                    self.windows[0].mapped = true;
+                    self.windows[0].mapped = self.current_tag.borrow().intersection(&self.windows[0].tags).into_iter().peekable().peek() != None;
                 } else if length > 1 {
                     self.windows[0].x = 0;
                     self.windows[0].y = self.settings.get_bar().height;
                     self.windows[0].width = self.width / 2 - 2 * border;
                     self.windows[0].height =
                         self.height - self.settings.get_bar().height - 2 * border;
-                    self.windows[0].mapped = true;
+                    self.windows[0].mapped = self.current_tag.borrow().intersection(&self.windows[0].tags).into_iter().peekable().peek() != None;
                 }
 
                 let item_height = if length > 1 {
@@ -75,7 +76,7 @@ impl LayoutManager {
                         + self.settings.get_bar().height;
                     self.windows[index].height = item_height;
                     self.windows[index].width = self.width / 2 - 2 * border;
-                    self.windows[index].mapped = true;
+                    self.windows[index].mapped = self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None;
                 }
 
                 for window in &mut self.windows {
@@ -126,7 +127,6 @@ impl LayoutManager {
             border_color: Color::new(0, 0, 0, 0),
             mapped: false,
         });
-        self.recalc();
     }
 
     pub fn focus(&mut self, window_id: u32) {
@@ -137,13 +137,11 @@ impl LayoutManager {
                 window.focused = false
             }
         }
-        self.recalc();
     }
 
     pub fn unmanage(&mut self, window_id: u32) {
         info!("Unmanage window {}", window_id);
         self.windows
             .retain(|item: &Window| item.window_id != window_id);
-        self.recalc();
     }
 }
