@@ -7,9 +7,9 @@ use crate::setting::Settings;
 use crate::utils::color::Color;
 use crate::utils::font::TextExtends;
 use image::GenericImageView;
-use std::sync::Arc;
-use std::collections::HashSet;
 use std::cell::RefCell;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 pub struct Oscillator {
     pub connection: Arc<xcb::Connection>,
@@ -51,7 +51,11 @@ impl Oscillator {
                 height as u32,
                 current_tag.clone(),
             )),
-            bar: std::cell::RefCell::new(Bar::new(settings.clone(), width as u32, current_tag.clone())),
+            bar: std::cell::RefCell::new(Bar::new(
+                settings.clone(),
+                width as u32,
+                current_tag.clone(),
+            )),
         };
         _self.bar.borrow_mut().prepare(&_self);
 
@@ -165,7 +169,7 @@ impl Oscillator {
                                     xcb::kill_client(&self.connection, window);
                                     self.flush();
                                 }
-                                Some(Key::SelTag {tag}) => {
+                                Some(Key::SelTag { tag }) => {
                                     info!("Select Tag: \"{}\"", tag);
 
                                     self.current_tag.borrow_mut().clear();
@@ -177,8 +181,10 @@ impl Oscillator {
 
                                     self.flush();
                                 }
-                                Some(Key::TagTarget {tag}) => {
-                                    self.layout_manager.borrow_mut().move_focused_window_to(*tag);
+                                Some(Key::TagTarget { tag }) => {
+                                    self.layout_manager
+                                        .borrow_mut()
+                                        .move_focused_window_to(*tag);
 
                                     self.layout_manager.borrow_mut().recalc();
                                     self.layout_manager.borrow().sync(&self);

@@ -1,27 +1,31 @@
 use crate::oscillator::Oscillator;
 use crate::setting::Settings;
 use crate::utils::color::Color;
-use std::sync::Arc;
-use std::collections::HashSet;
 use std::cell::RefCell;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 pub struct Bar {
     settings: Arc<Settings>,
     width: u32,
     height: u32,
     font: u32,
-    current_tag: Arc<RefCell<HashSet<u32>>>
+    current_tag: Arc<RefCell<HashSet<u32>>>,
 }
 
 impl Bar {
-    pub fn new(settings: Arc<Settings>, width: u32, current_tag: Arc<RefCell<HashSet<u32>>>) -> Bar {
+    pub fn new(
+        settings: Arc<Settings>,
+        width: u32,
+        current_tag: Arc<RefCell<HashSet<u32>>>,
+    ) -> Bar {
         let bar_height = settings.get_bar().height;
         Bar {
             settings,
             width,
             height: bar_height,
             font: 0,
-            current_tag
+            current_tag,
         }
     }
 
@@ -57,23 +61,23 @@ impl Bar {
                     self.height as i32,
                     Color::from(&self.settings.get_bar().active_background_color),
                 );
-                    root.draw_text(
-                        x as i32,
-                        y as i32,
-                        Color::from(&self.settings.get_bar().active_font_color),
-                        Color::from(&self.settings.get_bar().active_background_color),
-                        self.font,
-                        &s,
-                    );
+                root.draw_text(
+                    x as i32,
+                    y as i32,
+                    Color::from(&self.settings.get_bar().active_font_color),
+                    Color::from(&self.settings.get_bar().active_background_color),
+                    self.font,
+                    &s,
+                );
             } else {
-        root.draw_text(
-            x as i32,
-            y as i32,
-            Color::from(&self.settings.get_bar().font_color),
-            Color::from(&self.settings.get_bar().background_color),
-            self.font,
-            &s,
-        );
+                root.draw_text(
+                    x as i32,
+                    y as i32,
+                    Color::from(&self.settings.get_bar().font_color),
+                    Color::from(&self.settings.get_bar().background_color),
+                    self.font,
+                    &s,
+                );
             }
         }
     }

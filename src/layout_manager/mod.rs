@@ -1,9 +1,9 @@
 use crate::oscillator::Oscillator;
 use crate::setting::*;
 use crate::utils::color::Color;
+use std::cell::RefCell;
 use std::collections::HashSet;
 use std::sync::Arc;
-use std::cell::RefCell;
 
 pub struct Window {
     // INPUT:
@@ -30,7 +30,12 @@ pub struct LayoutManager {
 }
 
 impl LayoutManager {
-    pub fn new(settings: Arc<Settings>, width: u32, height: u32, current_tag: Arc<RefCell<HashSet<u32>>>) -> LayoutManager {
+    pub fn new(
+        settings: Arc<Settings>,
+        width: u32,
+        height: u32,
+        current_tag: Arc<RefCell<HashSet<u32>>>,
+    ) -> LayoutManager {
         LayoutManager {
             windows: Vec::new(),
             settings,
@@ -41,7 +46,13 @@ impl LayoutManager {
     }
 
     fn is_window_of_index_in_current_tag(&self, index: usize) -> bool {
-        self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None
+        self.current_tag
+            .borrow()
+            .intersection(&self.windows[index].tags)
+            .into_iter()
+            .peekable()
+            .peek()
+            != None
     }
 
     pub fn recalc(&mut self) {
@@ -65,14 +76,14 @@ impl LayoutManager {
                 }
 
                 if length == 1 {
-                                let index_zero = mapped_window_index[0];
+                    let index_zero = mapped_window_index[0];
                     self.windows[index_zero].x = 0;
                     self.windows[index_zero].y = self.settings.get_bar().height;
                     self.windows[index_zero].width = self.width - 2 * *border;
                     self.windows[index_zero].height =
                         self.height - self.settings.get_bar().height - 2 * *border;
                 } else if length > 1 {
-                                let index_zero = mapped_window_index[0];
+                    let index_zero = mapped_window_index[0];
                     self.windows[index_zero].x = 0;
                     self.windows[index_zero].y = self.settings.get_bar().height;
                     self.windows[index_zero].width = self.width / 2 - 2 * border;
