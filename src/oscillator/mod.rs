@@ -121,6 +121,7 @@ impl Oscillator {
 
                                     let window = xcb::get_input_focus(&self.connection).get_reply().unwrap().focus();
                                     xcb::kill_client(&self.connection, window);
+                                    self.flush();
                                 }
                                 None => {
                                 }
