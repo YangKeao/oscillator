@@ -13,6 +13,7 @@ mod setting;
 mod oscillator;
 mod keyboard;
 mod layout_manager;
+mod utils;
 
 use clap::App;
 use config::File;

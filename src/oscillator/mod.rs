@@ -1,3 +1,4 @@
+use crate::utils::color::Color;
 use std::sync::Arc;
 use crate::setting::Settings;
 use crate::setting::Key;
@@ -14,14 +15,6 @@ pub struct Oscillator {
     width: i32,
     settings: Arc<Settings>,
     layout_manager: std::cell::RefCell<LayoutManager>,
-}
-
-pub struct Color {}
-
-impl Default for Color {
-    fn default() -> Self {
-        Color {}
-    }
 }
 
 impl Oscillator {
@@ -151,6 +144,7 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             self.focus(enter_notify_event.event());
+                            self.layout_manager.borrow().sync(self);
                             self.flush();
 
                             trace!("Event ENTER_NOTIFY triggered on WINDOW: {}",
@@ -251,13 +245,15 @@ impl Oscillator {
         xcb::set_input_focus(&self.connection, 1, window, xcb::CURRENT_TIME);
     }
 
-    pub fn set_window_border(&self, window: u32, border_width: u32, border_color: &str) {
+    pub fn set_window_border(&self, window: u32, border_width: u32, border_color: Color) {
         xcb::configure_window(&self.connection, window, &[
             (xcb::CONFIG_WINDOW_BORDER_WIDTH as u16, border_width),
         ]);
         xcb::change_window_attributes(&self.connection, window, &[
-            (xcb::CW_BORDER_PIXEL, 0x88888888)
+            (xcb::CW_BORDER_PIXEL, border_color.into())
         ]);
+
+        println!("{:#X} {:#X} {:#X} {:#X}", border_color.r, border_color.g, border_color.b, border_color.a);
     }
 
     pub fn listen_window_event(&self, window: u32) {

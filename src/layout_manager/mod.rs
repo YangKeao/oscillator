@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::collections::HashSet;
 use crate::oscillator::Oscillator;
 use crate::setting::*;
+use crate::utils::color::Color;
 
 pub struct Window {
     window_id: u32,
@@ -14,7 +15,7 @@ pub struct Window {
     y: u32,
     mapped: bool,
     border: u32,
-    border_color: String,
+    border_color: Color,
 }
 
 pub struct LayoutManager {
@@ -64,9 +65,9 @@ impl LayoutManager {
                 for window in &mut self.windows {
                     window.border = *border;
                     if window.focused {
-                        window.border_color = format!("{}", focus_border_color)
+                        window.border_color = Color::from(focus_border_color)
                     } else {
-                        window.border_color = format!("{}", normal_border_color)
+                        window.border_color = Color::from(normal_border_color)
                     }
                 }
             }
@@ -77,7 +78,7 @@ impl LayoutManager {
         for window in &self.windows {
             if window.mapped {
                 root.move_and_resize_window(window.window_id, window.x, window.y, window.width, window.height);
-                root.set_window_border(window.window_id, window.border, &window.border_color);
+                root.set_window_border(window.window_id, window.border, window.border_color);
                 root.map_window(window.window_id); // TODO: check tags
             } else {
                 root.unmap_window(window.window_id);
@@ -100,7 +101,7 @@ impl LayoutManager {
             x: 0,
             y: 0,
             border: 0,
-            border_color: String::new(),
+            border_color: Color::new(),
             mapped: false,
         });
         self.recalc();
@@ -114,6 +115,7 @@ impl LayoutManager {
                 window.focused = false
             }
         }
+        self.recalc();
     }
 
     pub fn unmanage(&mut self, window_id: u32) {
