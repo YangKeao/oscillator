@@ -10,7 +10,7 @@ use image::GenericImageView;
 use std::sync::Arc;
 
 pub struct Oscillator {
-    connection: Arc<xcb::Connection>,
+    pub connection: Arc<xcb::Connection>,
     screen_num: i32,
     window_id: u32,
     height: i32,
@@ -46,6 +46,7 @@ impl Oscillator {
             )),
             bar: std::cell::RefCell::new(Bar::new(settings.clone(), width as u32)),
         };
+        _self.bar.borrow_mut().prepare(&_self);
 
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
             | xcb::EVENT_MASK_BUTTON_PRESS
@@ -263,6 +264,32 @@ impl Oscillator {
         }
     }
 
+    pub fn get_screen(&self) -> xcb::base::StructPtr<'_, xcb::ffi::xproto::xcb_screen_t> {
+        return self
+            .connection
+            .get_setup()
+            .roots()
+            .nth(self.screen_num as usize)
+            .unwrap();
+    }
+
+    pub fn draw_text(&self, x: i32, y: i32, foreground: Color, background: Color, font: u32, text: &str) {
+        let screen = self.get_screen();
+        let gc = self.connection.generate_id();
+        xcb::create_gc(
+            &self.connection,
+            gc,
+            screen.root(),
+            &[
+                (xcb::GC_FOREGROUND, foreground.into()),
+                (xcb::GC_BACKGROUND, background.into()),
+                (xcb::GC_FONT, font),
+            ],
+        );
+
+        xcb::image_text_8(&self.connection, self.window_id, gc, x as i16, y as i16, text);
+    }
+
     pub fn fill_rect(&self, x: i32, y: i32, w: i32, h: i32, color: Color) {
         let screen = self
             .connection
@@ -414,10 +441,14 @@ impl Oscillator {
         */
     }
 
-    pub fn query_text_extents(&self, font_name: &str, s: &str) -> TextExtends {
+    pub fn create_font(&self, font_name: &str) -> u32 {
         let font = self.connection.generate_id();
         xcb::open_font(&self.connection, font, font_name);
 
+        return font;
+    }
+
+    pub fn query_text_extents(&self, font: u32, s: &str) -> TextExtends {
         let len = s.len();
         let ptr = s.as_ptr();
         let ptr = ptr as *const xcb::Char2b;

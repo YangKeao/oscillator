@@ -28,6 +28,7 @@ pub struct BarSettings {
     pub font_family: String,
     pub font_color: String,
     pub background_color: String,
+    pub tag_cell_width: u32,
 }
 
 #[derive(Serialize, Deserialize)]
