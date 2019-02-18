@@ -40,6 +40,10 @@ impl LayoutManager {
         }
     }
 
+    fn is_window_of_index_in_current_tag(&self, index: usize) -> bool {
+        self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None
+    }
+
     pub fn recalc(&mut self) {
         match self.settings.get_layout_manager_settings() {
             LayoutManagerSettings::Stack {
@@ -51,7 +55,7 @@ impl LayoutManager {
                 let mut mapped_window_index = Vec::new();
 
                 for index in 0..self.windows.len() {
-                    if self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None {
+                    if self.is_window_of_index_in_current_tag(index) {
                         mapped_window_index.push(index);
                         length += 1;
                         self.windows[index].mapped = true;
