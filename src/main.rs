@@ -9,16 +9,16 @@ extern crate serde_derive;
 extern crate log;
 extern crate env_logger;
 
-mod setting;
-mod oscillator;
+mod bar;
 mod keyboard;
 mod layout_manager;
+mod oscillator;
+mod setting;
 mod utils;
-mod bar;
 
 use clap::App;
-use config::File;
 use config::Config;
+use config::File;
 use config::FileFormat;
 use setting::Settings;
 
@@ -34,12 +34,16 @@ fn main() {
     // TODO: Handle Error
     let mut config = Config::default();
     config
-        .merge(File::with_name(
-            &format!("{}/.oscillator", dirs::home_dir().unwrap().to_str().unwrap())
-        ).format(FileFormat::Json)).unwrap()
-        .merge(File::with_name(
-            "/etc/oscillator"
-        ).format(FileFormat::Json)).unwrap();
+        .merge(
+            File::with_name(&format!(
+                "{}/.oscillator",
+                dirs::home_dir().unwrap().to_str().unwrap()
+            ))
+            .format(FileFormat::Json),
+        )
+        .unwrap()
+        .merge(File::with_name("/etc/oscillator").format(FileFormat::Json))
+        .unwrap();
 
     let settings = Settings::from_config(config);
 

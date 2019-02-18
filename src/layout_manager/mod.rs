@@ -1,8 +1,8 @@
-use std::sync::Arc;
-use std::collections::HashSet;
 use crate::oscillator::Oscillator;
 use crate::setting::*;
 use crate::utils::color::Color;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 pub struct Window {
     // INPUT:
@@ -41,18 +41,24 @@ impl LayoutManager {
         let length = self.windows.len() as u32;
 
         match self.settings.get_layout_manager_settings() {
-            LayoutManagerSettings::Stack {border, focus_border_color, normal_border_color} => {
+            LayoutManagerSettings::Stack {
+                border,
+                focus_border_color,
+                normal_border_color,
+            } => {
                 if length == 1 {
                     self.windows[0].x = 0;
                     self.windows[0].y = self.settings.get_bar().height;
                     self.windows[0].width = self.width - 2 * *border;
-                    self.windows[0].height = self.height - self.settings.get_bar().height - 2 * *border;
+                    self.windows[0].height =
+                        self.height - self.settings.get_bar().height - 2 * *border;
                     self.windows[0].mapped = true;
                 } else if length > 1 {
                     self.windows[0].x = 0;
                     self.windows[0].y = self.settings.get_bar().height;
                     self.windows[0].width = self.width / 2 - 2 * border;
-                    self.windows[0].height = self.height - self.settings.get_bar().height - 2 * border;
+                    self.windows[0].height =
+                        self.height - self.settings.get_bar().height - 2 * border;
                     self.windows[0].mapped = true;
                 }
 
@@ -63,7 +69,8 @@ impl LayoutManager {
                 };
                 for index in 1..(length as usize) {
                     self.windows[index].x = self.width / 2;
-                    self.windows[index].y = (item_height + 2 * border) * ((index - 1) as u32) + self.settings.get_bar().height;
+                    self.windows[index].y = (item_height + 2 * border) * ((index - 1) as u32)
+                        + self.settings.get_bar().height;
                     self.windows[index].height = item_height;
                     self.windows[index].width = self.width / 2 - 2 * border;
                     self.windows[index].mapped = true;
@@ -84,7 +91,13 @@ impl LayoutManager {
     pub fn sync(&self, root: &Oscillator) {
         for window in &self.windows {
             if window.mapped {
-                root.move_and_resize_window(window.window_id, window.x, window.y, window.width, window.height);
+                root.move_and_resize_window(
+                    window.window_id,
+                    window.x,
+                    window.y,
+                    window.width,
+                    window.height,
+                );
                 root.set_window_border(window.window_id, window.border, window.border_color);
                 root.map_window(window.window_id); // TODO: check tags
             } else {
@@ -127,7 +140,8 @@ impl LayoutManager {
 
     pub fn unmanage(&mut self, window_id: u32) {
         info!("Unmanage window {}", window_id);
-        self.windows.retain(|item: &Window| item.window_id != window_id);
+        self.windows
+            .retain(|item: &Window| item.window_id != window_id);
         self.recalc();
     }
 }

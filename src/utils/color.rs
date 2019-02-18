@@ -30,17 +30,15 @@ impl From<&String> for Color {
 
 impl Into<u32> for Color {
     fn into(self) -> u32 {
-        return ((self.a as u32) << (3 * 8)) + ((self.r as u32) << (2 * 8)) + ((self.g as u32) << (1 * 8)) + ((self.b as u32) << (0 * 8));
+        return ((self.a as u32) << (3 * 8))
+            + ((self.r as u32) << (2 * 8))
+            + ((self.g as u32) << (1 * 8))
+            + ((self.b as u32) << (0 * 8));
     }
 }
 
 impl Color {
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> Color {
-        Color {
-            r,
-            g,
-            b,
-            a,
-        }
+        Color { r, g, b, a }
     }
 }
