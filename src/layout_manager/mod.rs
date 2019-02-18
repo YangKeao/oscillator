@@ -25,6 +25,7 @@ pub struct LayoutManager {
     settings: Arc<Settings>,
     width: u32,
     height: u32,
+    current_tag: HashSet<u32>,
 }
 
 impl LayoutManager {
@@ -34,6 +35,7 @@ impl LayoutManager {
             settings,
             width,
             height,
+            current_tag: HashSet::new(),
         }
     }
 
