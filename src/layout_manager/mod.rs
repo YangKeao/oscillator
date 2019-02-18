@@ -13,16 +13,16 @@ pub struct Window {
     mapped: bool,
 }
 
-pub struct WindowManager {
+pub struct LayoutManager {
     windows: Vec<Window>,
     settings: Arc<Settings>,
     width: u32,
     height: u32,
 }
 
-impl WindowManager {
-    pub fn new(settings: Arc<Settings>, width: u32, height: u32) -> WindowManager {
-        WindowManager {
+impl LayoutManager {
+    pub fn new(settings: Arc<Settings>, width: u32, height: u32) -> LayoutManager {
+        LayoutManager {
             windows: Vec::new(),
             settings,
             width,

@@ -3,7 +3,7 @@ use crate::setting::Settings;
 use crate::setting::Key;
 use crate::keyboard::keysymdef::KEYSYM_MAP;
 use crate::keyboard::keymod::MOD_MAP;
-use crate::layout_manager::WindowManager;
+use crate::layout_manager::LayoutManager;
 use image::GenericImageView;
 
 pub struct Oscillator {
@@ -13,7 +13,7 @@ pub struct Oscillator {
     height: i32,
     width: i32,
     settings: Arc<Settings>,
-    window_manager: std::cell::RefCell<WindowManager>,
+    layout_manager: std::cell::RefCell<LayoutManager>,
 }
 
 pub struct Color {}
@@ -42,7 +42,7 @@ impl Oscillator {
             width,
             height,
             settings: settings.clone(),
-            window_manager: std::cell::RefCell::new(WindowManager::new(settings.clone(), width as u32, height as u32))
+            layout_manager: std::cell::RefCell::new(LayoutManager::new(settings.clone(), width as u32, height as u32))
         };
 
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
@@ -167,8 +167,8 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             let window = map_request_event.window();
-                            self.window_manager.borrow_mut().manage(window);
-                            self.window_manager.borrow().sync(self);
+                            self.layout_manager.borrow_mut().manage(window);
+                            self.layout_manager.borrow().sync(self);
 
                             trace!("Event MAP_REQUEST triggered");
                         }
@@ -195,8 +195,8 @@ impl Oscillator {
                                 unsafe { xcb::cast_event(&event) };
 
                             let window = destroy_notify_event.window();
-                            self.window_manager.borrow_mut().unmanage(window);
-                            self.window_manager.borrow().sync(self);
+                            self.layout_manager.borrow_mut().unmanage(window);
+                            self.layout_manager.borrow().sync(self);
                             trace!("Event DESTROY_NOTIFY triggered");
                         }
                         xcb::GRAVITY_NOTIFY => {
