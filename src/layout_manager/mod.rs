@@ -5,10 +5,12 @@ use crate::setting::*;
 use crate::utils::color::Color;
 
 pub struct Window {
+    // INPUT:
     window_id: u32,
     focused: bool,
     tags: HashSet<u32>,
 
+    // OUTPUT:
     width: u32,
     height: u32,
     x: u32,
