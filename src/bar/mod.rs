@@ -20,6 +20,6 @@ impl Bar {
     }
 
     pub fn draw(&self, root: &Oscillator) {
-        root.fill_rect(0, 0, self.width as i32, self.settings.get_bar().height as i32, Color::from(&self.settings.get_bar().background_color));
+        root.fill_rect(0, 0, self.width as i32, self.height as i32, Color::from(&self.settings.get_bar().background_color));
     }
 }
