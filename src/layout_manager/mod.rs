@@ -41,28 +41,39 @@ impl LayoutManager {
     }
 
     pub fn recalc(&mut self) {
-        let length = self.windows.len() as u32;
-
         match self.settings.get_layout_manager_settings() {
             LayoutManagerSettings::Stack {
                 border,
                 focus_border_color,
                 normal_border_color,
             } => {
+                let mut length = 0u32;
+                let mut mapped_window_index = Vec::new();
+
+                for index in 0..self.windows.len() {
+                    if self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None {
+                        mapped_window_index.push(index);
+                        length += 1;
+                        self.windows[index].mapped = true;
+                    } else {
+                        self.windows[index].mapped = false;
+                    }
+                }
+
                 if length == 1 {
-                    self.windows[0].x = 0;
-                    self.windows[0].y = self.settings.get_bar().height;
-                    self.windows[0].width = self.width - 2 * *border;
-                    self.windows[0].height =
+                                let index_zero = mapped_window_index[0];
+                    self.windows[index_zero].x = 0;
+                    self.windows[index_zero].y = self.settings.get_bar().height;
+                    self.windows[index_zero].width = self.width - 2 * *border;
+                    self.windows[index_zero].height =
                         self.height - self.settings.get_bar().height - 2 * *border;
-                    self.windows[0].mapped = self.current_tag.borrow().intersection(&self.windows[0].tags).into_iter().peekable().peek() != None;
                 } else if length > 1 {
-                    self.windows[0].x = 0;
-                    self.windows[0].y = self.settings.get_bar().height;
-                    self.windows[0].width = self.width / 2 - 2 * border;
-                    self.windows[0].height =
+                                let index_zero = mapped_window_index[0];
+                    self.windows[index_zero].x = 0;
+                    self.windows[index_zero].y = self.settings.get_bar().height;
+                    self.windows[index_zero].width = self.width / 2 - 2 * border;
+                    self.windows[index_zero].height =
                         self.height - self.settings.get_bar().height - 2 * border;
-                    self.windows[0].mapped = self.current_tag.borrow().intersection(&self.windows[0].tags).into_iter().peekable().peek() != None;
                 }
 
                 let item_height = if length > 1 {
@@ -70,13 +81,14 @@ impl LayoutManager {
                 } else {
                     self.height - self.settings.get_bar().height - 2 * border
                 };
-                for index in 1..(length as usize) {
+                for i in 1..(length as usize) {
+                    let index = mapped_window_index[i];
+                    println!("YEAHYEAHYEAH");
                     self.windows[index].x = self.width / 2;
-                    self.windows[index].y = (item_height + 2 * border) * ((index - 1) as u32)
+                    self.windows[index].y = (item_height + 2 * border) * ((i - 1) as u32)
                         + self.settings.get_bar().height;
                     self.windows[index].height = item_height;
                     self.windows[index].width = self.width / 2 - 2 * border;
-                    self.windows[index].mapped = self.current_tag.borrow().intersection(&self.windows[index].tags).into_iter().peekable().peek() != None;
                 }
 
                 for window in &mut self.windows {
