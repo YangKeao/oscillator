@@ -21,10 +21,18 @@ pub enum LayoutManagerSettings {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(tag = "tiling_method")]
+pub struct BarSettings {
+    pub height: u32,
+    pub font_size: u32,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Settings {
     keys: HashMap<String, Key>,
     background: String,
-    layout_manager: LayoutManagerSettings
+    layout_manager: LayoutManagerSettings,
+    bar: BarSettings,
 }
 
 impl Settings {
@@ -52,5 +60,8 @@ impl Settings {
     }
     pub fn get_layout_manager_settings(&self) -> &LayoutManagerSettings {
         &self.layout_manager
+    }
+    pub fn get_bar(&self) -> &BarSettings {
+        &self.bar
     }
 }

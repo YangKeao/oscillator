@@ -44,23 +44,28 @@ impl LayoutManager {
             LayoutManagerSettings::Stack {border, focus_border_color, normal_border_color} => {
                 if length == 1 {
                     self.windows[0].x = 0;
-                    self.windows[0].y = 0;
+                    self.windows[0].y = self.settings.get_bar().height;
                     self.windows[0].width = self.width - 2 * *border;
-                    self.windows[0].height = self.height - 2 * *border;
+                    self.windows[0].height = self.height - self.settings.get_bar().height - 2 * *border;
                     self.windows[0].mapped = true;
                 } else if length > 1 {
                     self.windows[0].x = 0;
-                    self.windows[0].y = 0;
+                    self.windows[0].y = self.settings.get_bar().height;
                     self.windows[0].width = self.width / 2 - 2 * border;
-                    self.windows[0].height = self.height - 2 * border;
+                    self.windows[0].height = self.height - self.settings.get_bar().height - 2 * border;
                     self.windows[0].mapped = true;
                 }
 
+                let item_height = if length > 1 {
+                    (self.height - self.settings.get_bar().height) / (length - 1) - 2 * border
+                } else {
+                    self.height - self.settings.get_bar().height - 2 * border
+                };
                 for index in 1..(length as usize) {
                     self.windows[index].x = self.width / 2;
-                    self.windows[index].y = self.height / (length - 1) * ((index - 1) as u32);
+                    self.windows[index].y = (item_height + 2 * border) * ((index - 1) as u32) + self.settings.get_bar().height;
+                    self.windows[index].height = item_height;
                     self.windows[index].width = self.width / 2 - 2 * border;
-                    self.windows[index].height = self.height / (length - 1) - 2 * border;
                     self.windows[index].mapped = true;
                 }
 
