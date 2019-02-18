@@ -3,7 +3,7 @@ use crate::setting::Settings;
 use crate::setting::Key;
 use crate::keyboard::keysymdef::KEYSYM_MAP;
 use crate::keyboard::keymod::MOD_MAP;
-use crate::window_manager::WindowManager;
+use crate::layout_manager::WindowManager;
 use image::GenericImageView;
 
 pub struct Oscillator {
