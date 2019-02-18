@@ -168,6 +168,7 @@ impl Oscillator {
 
                             let window = map_request_event.window();
                             self.layout_manager.borrow_mut().manage(window);
+                            self.listen_window_event(window);
                             self.layout_manager.borrow().sync(self);
 
                             trace!("Event MAP_REQUEST triggered");
@@ -245,10 +246,21 @@ impl Oscillator {
 
     pub fn focus(&self, window: u32) {
         info!("Focus on WINDOW {}", window);
+
+        self.layout_manager.borrow_mut().focus(window);
         xcb::set_input_focus(&self.connection, 1, window, xcb::CURRENT_TIME);
     }
 
-    pub fn set_windows_input(&self, window: u32) {
+    pub fn set_window_border(&self, window: u32, border_width: u32, border_color: &str) {
+        xcb::configure_window(&self.connection, window, &[
+            (xcb::CONFIG_WINDOW_BORDER_WIDTH as u16, border_width),
+        ]);
+        xcb::change_window_attributes(&self.connection, window, &[
+            (xcb::CW_BORDER_PIXEL, 0x88888888)
+        ]);
+    }
+
+    pub fn listen_window_event(&self, window: u32) {
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS | xcb::EVENT_MASK_ENTER_WINDOW |
             xcb::EVENT_MASK_STRUCTURE_NOTIFY;
 

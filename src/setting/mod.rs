@@ -10,17 +10,21 @@ pub enum Key {
     Quit,
 }
 
-#[derive(Clone, Copy)]
 #[derive(Serialize, Deserialize)]
-pub enum TilingMethod {
-    Stack
+#[serde(tag = "tiling_method")]
+pub enum LayoutManagerSettings {
+    Stack {
+        border: u32,
+        focus_border_color: String,
+        normal_border_color: String,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
     keys: HashMap<String, Key>,
     background: String,
-    tiling_method: TilingMethod
+    layout_manager: LayoutManagerSettings
 }
 
 impl Settings {
@@ -46,7 +50,7 @@ impl Settings {
     pub fn get_keys(&self) -> &HashMap<String, Key> {
         &self.keys
     }
-    pub fn get_tiling_method(&self) -> TilingMethod {
-        self.tiling_method
+    pub fn get_layout_manager_settings(&self) -> &LayoutManagerSettings {
+        &self.layout_manager
     }
 }
