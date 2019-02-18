@@ -144,4 +144,13 @@ impl LayoutManager {
         self.windows
             .retain(|item: &Window| item.window_id != window_id);
     }
+
+    pub fn move_focused_window_to(&mut self, tag: u32) {
+        for window in &mut self.windows {
+            if window.focused {
+                window.tags.clear();
+                window.tags.insert(tag);
+            }
+        }
+    }
 }

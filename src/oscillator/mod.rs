@@ -178,7 +178,12 @@ impl Oscillator {
                                     self.flush();
                                 }
                                 Some(Key::TagTarget {tag}) => {
-                                    unimplemented!();
+                                    self.layout_manager.borrow_mut().move_focused_window_to(*tag);
+
+                                    self.layout_manager.borrow_mut().recalc();
+                                    self.layout_manager.borrow().sync(&self);
+
+                                    self.flush();
                                 }
                                 Some(Key::SelAllTag) => {
                                     info!("Select All Tags");
