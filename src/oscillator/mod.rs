@@ -5,6 +5,7 @@ use crate::layout_manager::LayoutManager;
 use crate::setting::Key;
 use crate::setting::Settings;
 use crate::utils::color::Color;
+use crate::utils::font::TextExtends;
 use image::GenericImageView;
 use std::sync::Arc;
 
@@ -411,6 +412,21 @@ impl Oscillator {
             (xcb::CW_BACK_PIXMAP, pixmap),
         ]);
         */
+    }
+
+    pub fn query_text_extents(&self, font_name: &str, s: &str) -> TextExtends {
+        let font = self.connection.generate_id();
+        xcb::open_font(&self.connection, font, font_name);
+
+        let len = s.len();
+        let ptr = s.as_ptr();
+        let ptr = ptr as *const xcb::Char2b;
+        let text_extends = xcb::query_text_extents(&self.connection, font, unsafe {std::slice::from_raw_parts(ptr, len)}).get_reply().unwrap();
+        return TextExtends {
+            overall_width: text_extends.overall_width(),
+            font_ascent: text_extends.font_ascent(),
+            font_descent: text_extends.font_descent(),
+        }
     }
 
     pub fn flush(&self) {

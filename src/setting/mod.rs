@@ -4,7 +4,9 @@ use std::process;
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Key {
-    Spawn { command: Vec<String> },
+    Spawn {
+        command: Vec<String>
+    },
     Quit,
 }
 

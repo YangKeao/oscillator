@@ -27,5 +27,10 @@ impl Bar {
             self.height as i32,
             Color::from(&self.settings.get_bar().background_color),
         );
+
+        // TODO: tags range in settings
+        for i in 0..10 {
+            
+        }
     }
 }
