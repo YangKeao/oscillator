@@ -108,7 +108,7 @@ impl LayoutManager {
             x: 0,
             y: 0,
             border: 0,
-            border_color: Color::new(),
+            border_color: Color::new(0, 0, 0, 0),
             mapped: false,
         });
         self.recalc();

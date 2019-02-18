@@ -25,6 +25,9 @@ pub enum LayoutManagerSettings {
 pub struct BarSettings {
     pub height: u32,
     pub font_size: u32,
+    pub font_family: String,
+    pub font_color: String,
+    pub background_color: String,
 }
 
 #[derive(Serialize, Deserialize)]

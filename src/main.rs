@@ -14,6 +14,7 @@ mod oscillator;
 mod keyboard;
 mod layout_manager;
 mod utils;
+mod bar;
 
 use clap::App;
 use config::File;

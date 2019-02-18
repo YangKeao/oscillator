@@ -5,6 +5,7 @@ use crate::setting::Key;
 use crate::keyboard::keysymdef::KEYSYM_MAP;
 use crate::keyboard::keymod::MOD_MAP;
 use crate::layout_manager::LayoutManager;
+use crate::bar::Bar;
 use image::GenericImageView;
 
 pub struct Oscillator {
@@ -15,6 +16,7 @@ pub struct Oscillator {
     width: i32,
     settings: Arc<Settings>,
     layout_manager: std::cell::RefCell<LayoutManager>,
+    bar: std::cell::RefCell<Bar>,
 }
 
 impl Oscillator {
@@ -28,14 +30,16 @@ impl Oscillator {
         let height = screen.height_in_pixels() as i32;
 
         let settings = Arc::new(settings);
+        let connection = Arc::new(connection);
         let _self = Oscillator {
-            connection: Arc::new(connection),
+            connection: connection.clone(),
             screen_num,
             window_id: root_id,
             width,
             height,
             settings: settings.clone(),
-            layout_manager: std::cell::RefCell::new(LayoutManager::new(settings.clone(), width as u32, height as u32))
+            layout_manager: std::cell::RefCell::new(LayoutManager::new(settings.clone(), width as u32, height as u32)),
+            bar: std::cell::RefCell::new(Bar::new(settings.clone(), width as u32)),
         };
 
         const EVENT_MASK: u32 = xcb::EVENT_MASK_KEY_PRESS
@@ -68,6 +72,8 @@ impl Oscillator {
 //        _self.set_background(settings.get_background());
 
         _self.focus(_self.window_id);
+        _self.bar.borrow().draw(&_self);
+
         _self.flush();
 
         return _self;
@@ -231,7 +237,7 @@ impl Oscillator {
         let foreground = self.connection.generate_id();
 
         xcb::create_gc(&self.connection, foreground, screen.root(), &[
-            (xcb::GC_FOREGROUND, screen.white_pixel()),
+            (xcb::GC_FOREGROUND, color.into()),
             (xcb::GC_GRAPHICS_EXPOSURES, 0),
         ]);
         xcb::poly_fill_rectangle(&self.connection, self.window_id, foreground, &[
