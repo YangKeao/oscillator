@@ -107,7 +107,7 @@ impl Oscillator {
             _self.width, _self.height
         );
 
-        //        _self.set_background(settings.get_background());
+        _self.set_background(settings.get_background());
 
         _self.focus(_self.window_id);
         _self.bar.borrow().draw(&_self);
@@ -474,37 +474,88 @@ impl Oscillator {
     }
 
     pub fn set_background(&self, background_src: &str) {
-        unimplemented!();
-        /*
-        let screen = self.connection.get_setup().roots().nth(self.screen_num as usize).unwrap();
+        let screen = self
+            .connection
+            .get_setup()
+            .roots()
+            .nth(self.screen_num as usize)
+            .unwrap();
         let foreground = self.connection.generate_id();
-        xcb::create_gc(&self.connection, foreground, screen.root(), &[
-            (xcb::GC_FOREGROUND, screen.white_pixel()),
-            (xcb::GC_GRAPHICS_EXPOSURES, 0),
-        ]);
+        xcb::create_gc(
+            &self.connection,
+            foreground,
+            screen.root(),
+            &[
+                (xcb::GC_FOREGROUND, screen.white_pixel()),
+                (xcb::GC_GRAPHICS_EXPOSURES, 0),
+            ],
+        );
 
         info!("Set background {}", background_src);
         let mut img = image::open(background_src).unwrap();
         let img_width = img.width();
         let img_height = img.height();
-        let mut img_buffer = img.to_rgb();
         info!("Background WIDTH: {} HEIGHT: {}", img_width, img_height);
 
         let pixmap = self.connection.generate_id();
-        xcb::create_pixmap(&self.connection, 24, pixmap, self.window_id, img_width as u16, img_height as u16);
-        // TODO: Set background
+        xcb::create_pixmap(
+            &self.connection,
+            24,
+            pixmap,
+            self.window_id,
+            img_width as u16,
+            img_height as u16,
+        );
+        self.flush();
 
-        let prop_root = xcb::intern_atom(&self.connection, false, "_XROOTPMAP_ID").get_reply().unwrap().atom();
-        let prop_esetroot = xcb::intern_atom(&self.connection, false, "ESETROOT_PMAP_ID").get_reply().unwrap().atom();
-        xcb::change_property(&self.connection, xcb::PROP_MODE_REPLACE as u8, self.window_id,
-                             prop_root, xcb::ATOM_PIXMAP, 32, &[pixmap]);
-        xcb::change_property(&self.connection, xcb::PROP_MODE_REPLACE as u8, self.window_id,
-                             prop_esetroot, xcb::ATOM_PIXMAP, 32, &[pixmap]);
+        let img_buffer = img.to_rgb().into_raw();
+        xcb::put_image(
+            &self.connection,
+            xcb::IMAGE_FORMAT_Z_PIXMAP as u8,
+            pixmap,
+            foreground,
+            img_width as u16,
+            img_height as u16,
+            0,
+            0,
+            0,
+            24,
+            &img_buffer,
+        );
+        self.flush();
 
-        xcb::change_window_attributes(&self.connection, self.window_id, &[
-            (xcb::CW_BACK_PIXMAP, pixmap),
-        ]);
-        */
+        let prop_root = xcb::intern_atom(&self.connection, false, "_XROOTPMAP_ID")
+            .get_reply()
+            .unwrap()
+            .atom();
+        let prop_esetroot = xcb::intern_atom(&self.connection, false, "ESETROOT_PMAP_ID")
+            .get_reply()
+            .unwrap()
+            .atom();
+        xcb::change_property(
+            &self.connection,
+            xcb::PROP_MODE_REPLACE as u8,
+            self.window_id,
+            prop_root,
+            xcb::ATOM_PIXMAP,
+            32,
+            &[pixmap],
+        );
+        xcb::change_property(
+            &self.connection,
+            xcb::PROP_MODE_REPLACE as u8,
+            self.window_id,
+            prop_esetroot,
+            xcb::ATOM_PIXMAP,
+            32,
+            &[pixmap],
+        );
+
+        xcb::change_window_attributes(
+            &self.connection,
+            self.window_id,
+            &[(xcb::CW_BACK_PIXMAP, pixmap)],
+        );
     }
 
     pub fn create_font(&self, font_name: &str) -> u32 {
